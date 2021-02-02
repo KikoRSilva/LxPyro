@@ -1,0 +1,41 @@
+.grow {
+    transform: none;
+    transition: all 0.1s ease-out;
+}
+
+.grow:hover {
+    transform: scale(1.1);
+}
+
+.nav-link {
+    padding-left: 0.5rem;
+}
+
+.title {
+    font-size: 3.5rem;
+    font-weight: 800;
+}
+
+.subtitle {
+    font-size: 1.8rem;
+    font-weight: bold;
+}
+
+.bg-dark { background-color: #646464; }
+.bg-semi-dark { background-color: #313131; }
+
+p:hover .creator {
+    text-decoration-color: #ff8100;
+}
+
+.round {
+    border-radius: 20px;
+}
+
+#main-sidebar {
+    height: 100%;
+}
+
+#main-content {
+    height: 100%;
+}

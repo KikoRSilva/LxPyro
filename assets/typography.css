@@ -1,0 +1,13 @@
+*, body, html {
+    font-family: "Poppins", sans-serif;
+}
+
+@font-face {
+    font-family: "Poppins";
+    src: url("./fonts/Poppins-Regular.tff") format("truetype");
+}
+
+/* hides the bar at the graphs */
+.modebar {
+    display: none !important;
+}

@@ -1,0 +1,13 @@
+Product,Genre,Market_Price / Unit,Price / Unit,Market_Price / Box,Price / Box,Units / Box,Sold,Bought,Initial_Stock / Units,Current_Stock
+C4 Small,Petardo,"0,13","0,41","3,68","11,04",30,,,10,7
+EX3 Explosive 3,Petardo,"0,03","0,1","0,57","1,71",20,,,34,24
+DumBum 120DB,Petardo,"0,22","0,69","4,27","12,81",20,,,65,8
+DumBum 2G,Petardo,"0,21","0,651","4,1","12,3",20,,,21,4
+Black Widow TXP859,Petardo,"0,15","0,47","2,85","8,55",20,,,45,2
+Strobe Red,Estroboscópico,"0,54","1,68","5,36","16,08",10,,,65,45
+Strobe TXF440,Estroboscópico,"0,42","1,31","2,52","7,56",6,,,76,26
+Vela Red,Potes de Fumo,"1,47","4,56","7,35","22,05",5,,,25,19
+Vela White,Potes de Fumo,"1,47","4,56","7,35","22,05",5,,,60,50
+Vela Green,Potes de Fumo,"1,47","4,56","7,35","22,05",5,,,78,45
+Flare Red,Tochas,"2,4","7,44",12,36,5,,,40,23
+Flare Green,Tochas,"2,29","7,1","11,42","34,26",5,,,40,35
