@@ -24,7 +24,7 @@ sidebar = html.Div(
                             [
                                 html.Img(src="/static/img/LxPyro.png", className="img-fluid mx-auto d-block mb-4"),
                                 html.P(
-                                    "Welcome to LxPyro's Dashboard",
+                                    "Welcome to LxPyro's Web App",
                                     className="lead text-white text-center mt-2"
                                 ),
                                 dbc.Nav(
@@ -288,4 +288,4 @@ def display_page(pathname):
 
 
 if __name__ == '__main__':
-    app.run_server(debug=False)
+    app.run_server(debug=True)

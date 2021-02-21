@@ -1,5 +1,6 @@
 import dash
 import dash_bootstrap_components as dbc
+import dash_uploader as du
 import dash_auth as auth
 from users import USERNAME_PASSWORD_PAIRS
 
@@ -15,6 +16,10 @@ external_stylesheets = [
     }
 ]
 
+# CONSTANTS
+DATABASE = 'data/database.db'
+UPLOAD_DIRECTORY = "../static/img"
+
 app = dash.Dash(
     __name__,
     suppress_callback_exceptions=True,
@@ -25,6 +30,8 @@ app = dash.Dash(
     external_stylesheets=external_stylesheets,
     title='LxPyro Web App'
     )
+
+du.configure_upload(app, "./static/img")
 
 auth = auth.BasicAuth(
     app,

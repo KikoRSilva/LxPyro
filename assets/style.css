@@ -28,9 +28,9 @@ p:hover .creator {
     text-decoration-color: #ff8100;
 }
 
-.round {
-    border-radius: 20px;
-}
+.round { border-radius: 20px; }
+
+.disabled { opacity: .6; }
 
 #main-sidebar {
     height: 100%;
