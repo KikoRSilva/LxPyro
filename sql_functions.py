@@ -12,12 +12,12 @@ from app import DATABASE
 """
 
 
-def add_customer(cursor, connection, name, age, address):
+def add_customer(cursor, connection, name, phone, insta, age, address):
     cursor.execute(
         """
-            INSERT INTO Customer VALUES(NULL,?,?,?,NULL)
+            INSERT INTO Customer VALUES(NULL,?,?,?,?,?,?)
         """,
-        (name, age, address)
+        (name, phone, insta, age, address, 0)
     )
     connection.commit()
 

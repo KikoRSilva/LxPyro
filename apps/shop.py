@@ -193,7 +193,7 @@ new_sale_modal = dbc.Modal(
             ], className="py-2")
 
         ]),
-        dbc.ModalFooter(children=[ html.P(id="new-sale-status", className="text-danger"), new_sale_save, new_sale_close])
+        dbc.ModalFooter(children=[html.P(id="new-sale-status", className="text-danger"), new_sale_save, new_sale_close])
     ],
     backdrop="static",
     scrollable=True,
@@ -491,9 +491,8 @@ def toggle_model_new_sale(n1, n2, is_open):
     [Input("new_sale_button", "n_clicks")]
 )
 def populate_products_list(n):
-
-
     options = []
+
     if n:
         # CONNECT TO SQLITE3 DATABASE
         connection = sql.connect(DATABASE)
@@ -556,20 +555,19 @@ def register_sale(n, product, quantity, date_value, address):
 
         if date_value is None:
             return "Pick a date"
-        dateObj = date.fromisoformat(date_value)
+        date_obj = date.fromisoformat(date_value)
 
         if address is None:
             return "Enter an address."
 
         now = datetime.now()
         current_time = now.strftime("%d/%m/%Y %H:%M:%S")
-        datePicked = dateObj.strftime("%d/%m/%Y")
+        date_picked = date_obj.strftime("%d/%m/%Y")
         price = get_product_price(cursor, connection, product)
         sale_amount = price * quantity
-        customer_id = 1     # TODO implement the new customer feature
-        register_sale(cursor, connection, current_time, datePicked, sale_amount, sale_amount, customer_id, address)
+        customer_id = 1  # TODO implement the new customer feature
+        register_sale(cursor, connection, current_time, date_picked, sale_amount, sale_amount, customer_id, address)
         sale_id = get_sale_id(cursor, connection, current_time)
         product_id = get_product_id(cursor, connection, product)
         register_sale_item(cursor, connection, quantity, price, sale_amount, sale_id, product_id)
         update_product_stock(cursor, connection, product_id, product, quantity)
-

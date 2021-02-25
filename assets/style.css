@@ -39,3 +39,8 @@ p:hover .creator {
 #main-content {
     height: 100%;
 }
+
+#new-client-form {
+    background-color: #FAFAFA;
+    border-radius: 20px;
+}

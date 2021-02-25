@@ -11,7 +11,7 @@ from app import app
 from app import server
 
 # connect to app pages
-from apps import shop, dashboard, error
+from apps import shop, dashboard, error, clients
 
 ########################################################################################################################
 sidebar = html.Div(
@@ -34,6 +34,8 @@ sidebar = html.Div(
                                         dbc.NavLink("DASHBOARD", href="/apps/dashboard", active="True",
                                                     className="grow text-white text-center fs-3 fw-bold py-4"),
                                         dbc.NavLink("SHOP", href="/apps/shop", active="True",
+                                                    className="grow text-white text-center fs-3 fw-bold py-4"),
+                                        dbc.NavLink("CLIENTS", href="/apps/clients", active="True",
                                                     className="grow text-white text-center fs-3 fw-bold py-4"),
                                     ],
                                     vertical=True,
@@ -283,6 +285,8 @@ def display_page(pathname):
         return dashboard.layout
     elif pathname == '/':
         return content
+    elif pathname =='/apps/clients':
+        return clients.layout
     else:
         return error.layout
 
