@@ -46,7 +46,6 @@ def add_product(cursor, connection, name, price_per_unit, basic_unit, limited, s
         """,
         (name, price_per_unit, basic_unit, limited, stock, active_for_sale, image_url, description)
     )
-    print(cursor.fetchall(cursor.execute("SELECT * FROM Product")))
     connection.commit()
 
 

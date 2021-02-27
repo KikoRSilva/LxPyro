@@ -28,10 +28,11 @@ app = dash.Dash(
         'content': 'width=device-width, initial-scale=1.0'
         }],
     external_stylesheets=external_stylesheets,
-    title='LxPyro Web App'
+    title='LxPyro',
+    update_title=False
     )
 
-du.configure_upload(app, "./static/img")
+du.configure_upload(app, "./static/img", use_upload_id=False)
 
 auth = auth.BasicAuth(
     app,
