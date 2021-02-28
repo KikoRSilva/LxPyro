@@ -1,13 +1,16 @@
 from datetime import datetime, date
 import os
+import pandas as pd
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 import dash_html_components as html
 import dash_uploader as du
+import dash_table as dt
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 
 from app import app
+from components.searchbar import search_bar
 from sql_functions import *
 
 add_new_item_button = dbc.Button(
@@ -175,7 +178,8 @@ new_sale_modal = dbc.Modal(
     [
         dbc.ModalHeader("REGISTER NEW SALE"),
         dbc.ModalBody(children=[
-            dcc.Dropdown(id="products_dropdown", className="py-2", searchable=False, placeholder="Select a product..."),
+            dcc.Dropdown(id="customers_dropdown", className="py-2", searchable=True, placeholder="Select a customer..."),
+            dcc.Dropdown(id="products_dropdown", className="py-2", searchable=True, placeholder="Select a product..."),
             dbc.InputGroup([
                 dbc.Input(type="number", id="product_quantity", placeholder="Quantity"),
                 dbc.Button("Show Price", id="calc_price", color="danger")
@@ -190,7 +194,8 @@ new_sale_modal = dbc.Modal(
                 dbc.InputGroupAddon(html.I(className="fas fa-map-marker-alt fa-2x text-danger"), addon_type="prepend",
                                     className="pt-3 pr-1"),
                 dbc.Input(placeholder="Address", id="address")
-            ], className="py-2")
+            ], className="py-2"),
+
 
         ]),
         dbc.ModalFooter(children=[html.P(id="new-sale-status", className="text-danger"), new_sale_save, new_sale_close])
@@ -198,69 +203,6 @@ new_sale_modal = dbc.Modal(
     backdrop="static",
     scrollable=True,
     id="modal_new_sale"
-)
-
-# SEARCH BAR
-search_bar = dbc.Container(
-    [
-        dbc.Row(
-            [
-                dbc.Col(
-                    [
-                        dbc.Input(id='keyword', placeholder='Product keyword',
-                                  className="text-white p-3")
-                    ],
-                    xs=12, sm=6, md=3,
-                ),
-                dbc.Col(
-                    [
-                        dbc.Select(
-                            options=[
-                                {"label": "Petard", "value": "Petardo"},
-                                {"label": "Strobe", "value": "Estroboscópico"},
-                                {"label": "Smoke", "value": "Potes de Fumo"},
-                                {"label": "Torch", "value": "Tocha"}
-                            ],
-                            placeholder='Categories',
-                            id='category',
-                            className="p-3"
-                        )
-                    ],
-                    xs=12, sm=6, md=3,
-                ),
-                dbc.Col(
-                    [
-                        dbc.Select(
-                            options=[
-                                {"label": "Lowest to Highest", "value": "lowtohigh"},
-                                {"label": "Highest to Lowest", "value": "Estroboscópico"},
-
-                            ],
-                            id='price_order',
-                            placeholder='Price order',
-                            className="p-3"
-                        )
-                    ],
-                    xs=12, sm=6, md=3,
-                ),
-                dbc.Col(
-                    [
-                        dbc.Button(
-                            [
-                                'Search ',
-                                html.I(className="fas fa-search text-white")
-                            ],
-                            className="justify-space-between btn-danger p-3 rounded text-center"
-                        )
-                    ],
-                    xs=12, sm=6, md=3,
-                    className="text-center"
-                )
-            ],
-            className="g-3"
-        )
-    ],
-    className="mt-4 bg-light rounded my-2 py-1 mx-5"
 )
 
 layout = html.Div(
@@ -293,39 +235,60 @@ layout = html.Div(
                             className="text-center",
                             xs=4,
                         ),
+                        dbc.Col(html.H1("Products", className="text-white text-center"), xs=12),
                         search_bar
                     ]
                 ),
                 dbc.Row(
                     [
-                        dbc.Col(
-                            [
-                                html.H1("Our Products", className="text-white text-center"),
-                            ],
-                            xs=12
-                        ),
-
-                        dbc.Row(
-                            [
-                                dbc.CardDeck(
-                                    id="card-group-area"
-                                ),
-                            ],
-                            className="px-3"
-                        ),
-                        dcc.Interval(
-                            id='cards-update',
-                            interval=10 * 1000,
-                            n_intervals=0
-                        )
-
+                        dbc.Row(className="px-3", id="card-group-area", justify="between"),
+                        dcc.Interval(id='cards-update', interval=10 * 1000, n_intervals=0)
                     ],
                     className="my-4"
-                )
+                ),
+                dbc.Row([
+                    dbc.Col(html.H1("Sales", className="text-white text-center"), xs=12),
+                    dbc.Col([
+                            dt.DataTable(
+                                id="sales-datatable",
+                                columns=[
+                                    {'name':'ID', 'id':'id'},
+                                    {'name':'Customer ID', 'id':'customer_id'},
+                                    {'name':'Address', 'id':'address'},
+                                    {'name':'Time registered', 'id':'time_created'},
+                                    {'name': 'Date to Deliver', 'id': 'date_to_deliver'},
+                                    {'name':'Total Sales Amount €', 'id':'sale_amount'},
+                                    {'name':'Total Sales Amount Paid €', 'id':'sale_amount_paid'},
+                                ],
+                                style_cell={
+                                     'textAlign': 'center',
+                                     'backgroundColor': 'rgb(50, 50, 50)',
+                                     'color': 'white'
+                                },
+                                style_as_list_view=True,
+                                style_header={'backgroundColor': '#313131'},
+                                style_data_conditional=[
+                                    {
+                                         'if': {'row_index': 'odd'},
+                                         'backgroundColor': '#646464'
+                                    }
+                                ],
+                            ),
+                            dcc.Interval(id='update', interval=1000 * 1000, n_intervals=0),
+                    ], xs=12, className="mb-5")
+                ])
             ]
         )
     ],
 )
+
+@app.callback(Output("sales-datatable", "data"), Input("update", "n_intervals"))
+def client_table_update(n):
+    con = sql.connect(DATABASE)
+    # Load the data into a DataFrame
+    df = pd.read_sql_query("SELECT * from Sale", con)
+    con.close()
+    return df.to_dict('records')
 
 
 def populate_products_card():
@@ -348,7 +311,7 @@ def populate_products_card():
 
         # if its not active for sale
         if active == "yes" and stock > 0:
-            card = dbc.Card(
+            card = html.Div([dbc.Card(
                 [
                     dbc.CardImg(src=url, top=True, className="img-fluid"),
                     dbc.CardBody(
@@ -359,10 +322,10 @@ def populate_products_card():
                             html.H5("In stock: {} {}".format(stock, unit), className="card-text"),
                         ]
                     )
-                ],
-            )
+                ], className="grow"
+            )], className="col-12 col-md-4 col-lg-3 py-3")
         elif active == 'yes' and stock == 0:
-            card = dbc.Card(
+            card = html.Div([dbc.Card(
                 [
                     dbc.CardImg(src=url, top=True, className="img-fluid"),
                     dbc.CardBody(
@@ -374,12 +337,12 @@ def populate_products_card():
                         ]
                     )
                 ],
-                className="disabled",
-            )
+                className="disabled grow",
+            )], className="col-12 col-md-4 col-lg-3 py-3")
         else:
-            card = dbc.Card(
+            card = html.Div([dbc.Card(
                 [
-                    dbc.CardImg(src=url, top=True, className="img-fluid", ),
+                    dbc.CardImg(src=url, top=True, className="img-fluid",),
                     dbc.CardBody(
                         [
                             html.H3("{} (not for sale)".format(name), className="card-title text-uppercase fw-bold"),
@@ -389,8 +352,8 @@ def populate_products_card():
                         ]
                     )
                 ],
-                className="disabled"
-            )
+                className="disabled grow"
+            )], className="col-12 col-md-4 col-lg-3 py-3")
 
         cards.append(card)
 
@@ -488,19 +451,23 @@ def toggle_model_new_sale(n1, n2, is_open):
 
 @app.callback(
     Output("products_dropdown", "options"),
+    Output("customers_dropdown", "options"),
     [Input("new_sale_button", "n_clicks")]
 )
 def populate_products_list(n):
-    options = []
-
+    products_options = []
+    customers_options = []
     if n:
         # CONNECT TO SQLITE3 DATABASE
         connection = sql.connect(DATABASE)
         cursor = connection.cursor()
         products = get_products_list(cursor, connection)
+        customers = get_customers_list(cursor, connection)
         for product in products:
-            options.append({"label": product[0], "value": product[0]})
-        return options
+            products_options.append({"label": product[0], "value": product[0]})
+        for customer in customers:
+            customers_options.append({"label": customer[0], "value": customer[0]})
+        return products_options, customers_options
     raise PreventUpdate
 
 
@@ -529,45 +496,60 @@ def calculate_sale_amount(name, quantity, calc):
     return
 
 
-@app.callback(Output("new-sale-status", "children"),
-              [Input("new_sale_save", "n_clicks"),
-               Input("products_dropdown", "value"),
-               Input("product_quantity", "value"),
-               Input("date-to-deliver", "date"),
-               Input("address", "value")
-               ]
-              )
-def register_sale(n, product, quantity, date_value, address):
+@app.callback(
+    Output("new-sale-status", "children"),
+    [
+          Input("new_sale_save", "n_clicks"),
+          Input("products_dropdown", "value"),
+          Input("product_quantity", "value"),
+          Input("date-to-deliver", "date"),
+          Input("address", "value"),
+          Input("customers_dropdown", "value")
+    ]
+)
+def register_sale(n, product, quantity, date_value, address, customer):
     # TODO Implement a way to register multi products for a single sale
     if n:
         # CONNECT TO SQLITE3 DATABASE
         connection = sql.connect(DATABASE)
         cursor = connection.cursor()
-
-        if product is None:
+        if customer is None:
+            return "Select a customer."
+        elif product is None:
             return "Select a product."
-        if quantity is None or quantity <= 0:
+        elif quantity is None or quantity <= 0:
             return "Enter a valid quantity."
-
-        current_stock = get_product_stock(cursor, connection, product)[0]
-        if current_stock - quantity < 0:
-            return "Not enough {} in stock.".format(product)
-
-        if date_value is None:
+        elif date_value is None:
             return "Pick a date"
-        date_obj = date.fromisoformat(date_value)
-
-        if address is None:
+        elif address is None:
             return "Enter an address."
+        else:
+            current_stock = get_product_stock(cursor, connection, product)[0]
+            if current_stock - quantity < 0:
+                return "Not enough {} in stock.".format(product)
 
-        now = datetime.now()
-        current_time = now.strftime("%d/%m/%Y %H:%M:%S")
-        date_picked = date_obj.strftime("%d/%m/%Y")
-        price = get_product_price(cursor, connection, product)
-        sale_amount = price * quantity
-        customer_id = 1  # TODO implement the new customer feature
-        register_sale(cursor, connection, current_time, date_picked, sale_amount, sale_amount, customer_id, address)
-        sale_id = get_sale_id(cursor, connection, current_time)
-        product_id = get_product_id(cursor, connection, product)
-        register_sale_item(cursor, connection, quantity, price, sale_amount, sale_id, product_id)
-        update_product_stock(cursor, connection, product_id, product, quantity)
+            date_obj = date.fromisoformat(date_value)
+            now = datetime.now()
+            current_time = now.strftime("%d/%m/%Y %H:%M:%S")
+            date_picked = date_obj.strftime("%d/%m/%Y")
+            price = get_product_price(cursor, connection, product)[0]
+            sale_amount = price * quantity
+            customer_id = get_customer_id(cursor, connection, customer)[0]
+
+            print("CURRENT TIME = {} | DATE PICKED = {}".format(current_time, date_picked))
+            print("SALE AMOUNT = {}".format(sale_amount))
+            print("CUSTOMER ID = {}".format(customer_id))
+            print("ADDRESS = {}".format(address))
+            print("PRICE = {}".format(price))
+            print("QUANTITY = {}".format(quantity))
+            print(type(price))
+
+            register_sale_sql(cursor, connection, current_time, date_picked, sale_amount, sale_amount, customer_id, address)
+            sale_id = get_sale_id(cursor, connection, current_time)[0]
+            product_id = get_product_id(cursor, connection, product)[0]
+            register_sale_item(cursor, connection, quantity, price, sale_amount, sale_id, product_id)
+            set_sale_status(cursor, connection, "Processing")
+            update_customer_sale_amount(cursor, connection, customer_id, sale_amount)
+            update_product_stock(cursor, connection, product_id, product, quantity)
+            return
+    return

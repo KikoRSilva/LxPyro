@@ -1,7 +1,5 @@
 import sqlite3 as sql
-
 from app import DATABASE
-
 """
     This function adds a customer to our DB to the Customer Table!
     The customer id auto-increments
@@ -10,8 +8,6 @@ from app import DATABASE
         -   Age of the customer
         -   Address of the customer
 """
-
-
 def add_customer(cursor, connection, name, phone, insta, age, address):
     cursor.execute(
         """
@@ -34,8 +30,6 @@ def add_customer(cursor, connection, name, phone, insta, age, address):
         -   If is active for sale or not
         -   Local path to image of the product
 """
-
-
 def add_product(cursor, connection, name, price_per_unit, basic_unit, limited, stock, active_for_sale, image_url,
                 description):
 
@@ -59,16 +53,14 @@ def add_product(cursor, connection, name, price_per_unit, basic_unit, limited, s
         -   Amount paid of the sale
         -   Customer ID that made the sale
 """
-
-
-def register_sale(cursor, connection, time_created, date_to_deliver, sale_amount, sale_amount_paid, customer_id, address):
+def register_sale_sql(cursor, connection, time_created, date_to_deliver, sale_amount, sale_amount_paid, customer_id, address):
     cursor.execute(
         """
             INSERT INTO Sale VALUES(NULL,?,?,?,?,?,?)
         """,
         (time_created, date_to_deliver, sale_amount, sale_amount_paid, customer_id, address)
     )
-    cursor.commit()
+    connection.commit()
 
 
 """
@@ -81,16 +73,14 @@ def register_sale(cursor, connection, time_created, date_to_deliver, sale_amount
         -   Sale ID
         -   Product ID
 """
-
-
-def register_sale_item(cursor, connection, quantity_sold, price_per_unit, price, sale_id, product_id):
+def register_sale_item(cursor, connection, quantity_sold, price, sale_amount, sale_id, product_id):
     cursor.execute(
         """
-            INSERT INTO Sale VALUES(NULL,?,?,?,?,?)
+            INSERT INTO Sale_Item VALUES(NULL,?,?,?,?,?)
         """,
-        (quantity_sold, price_per_unit, price, sale_id, product_id)
+        (quantity_sold, price, sale_amount, sale_id, product_id)
     )
-    cursor.commit()
+    connection.commit()
 
 
 """
@@ -108,7 +98,7 @@ def register_sale_status(cursor, connection, sale_id, status):
         """,
         (sale_id, status)
     )
-    cursor.commit()
+    connection.commit()
 
 
 """
@@ -127,7 +117,7 @@ def add_stock(cursor, connection, product_id, stock, time):
         """,
         (product_id, stock, time)
     )
-    cursor.commit()
+    connection.commit()
 
 
 """
@@ -144,17 +134,27 @@ def add_stock(cursor, connection, product_id, stock, time):
         -   Local path to image of the product
 """
 
-
+# Get a list with the product's name
 def get_products_list(cursor, connection):
     cursor.execute(
         """
-            SELECT DISTINCT name from Product
+            SELECT DISTINCT name FROM Product
         """
     )
     connection.commit()
     return cursor.fetchall()
 
+# Get a list with the Customer's name
+def get_customers_list(cursor, connection):
+    cursor.execute(
+        """
+            SELECT DISTINCT name FROM Customer
+        """
+    )
+    connection.commit()
+    return cursor.fetchall()
 
+# Get a list of all products registered
 def get_all_products(cursor, connection):
     cursor.execute("SELECT * FROM Product")
     return cursor.fetchall()
@@ -176,9 +176,25 @@ def get_product_id(cursor, connection, product):
     cursor.execute("SELECT DISTINCT id FROM Product WHERE name=?", (product,))
     return cursor.fetchone()
 
+def get_customer_id(cursor, connection, customer):
+    cursor.execute("SELECT DISTINCT id FROM Customer WHERE name=?", (customer,))
+    return cursor.fetchone()
+
 def update_product_stock(cursor, connection, id, product, quantity):
-    current_stock = get_product_stock(cursor, connection, product)
+    current_stock = get_product_stock(cursor, connection, product)[0]
     total = current_stock - quantity
     cursor.execute("UPDATE Product SET in_stock=? WHERE id=?", (total, id))
     connection.commit()
 
+def set_sale_status(cursor, connection, status):
+    cursor.execute(
+        """
+            INSERT INTO Sale_Status VALUES (NULL, ?)
+        """,
+        (status,)
+    )
+    connection.commit()
+
+def update_customer_sale_amount(cursor, connection, customer_id, sale_amount):
+    cursor.execute("UPDATE Customer SET sales_amount=sales_amount+? WHERE id=?", (sale_amount, customer_id))
+    connection.commit()
