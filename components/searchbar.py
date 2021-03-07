@@ -1,5 +1,6 @@
 import dash_html_components as html
 import dash_bootstrap_components as dbc
+import dash_core_components as dcc
 
 # SEARCH BAR
 search_bar = dbc.Container(
@@ -9,19 +10,13 @@ search_bar = dbc.Container(
                 dbc.Col(
                     [
                         dbc.Input(id='keyword', placeholder='Product keyword',
-                                  className="text-white p-3")
+                                  className="text-dark p-3")
                     ],
                     xs=12, sm=6, md=3,
                 ),
                 dbc.Col(
                     [
-                        dbc.Select(
-                            options=[
-                                {"label": "Petard", "value": "Petardo"},
-                                {"label": "Strobe", "value": "Estroboscópico"},
-                                {"label": "Smoke", "value": "Potes de Fumo"},
-                                {"label": "Torch", "value": "Tocha"}
-                            ],
+                        dcc.Dropdown(
                             placeholder='Categories',
                             id='category',
                             className="p-3"
@@ -31,7 +26,7 @@ search_bar = dbc.Container(
                 ),
                 dbc.Col(
                     [
-                        dbc.Select(
+                        dcc.Dropdown(
                             options=[
                                 {"label": "Lowest to Highest", "value": "lowtohigh"},
                                 {"label": "Highest to Lowest", "value": "Estroboscópico"},
@@ -51,11 +46,11 @@ search_bar = dbc.Container(
                                 'Search ',
                                 html.I(className="fas fa-search text-white")
                             ],
-                            className="justify-space-between btn-danger p-3 rounded text-center"
+                            className="justify-space-between btn-danger rounded text-center"
                         )
                     ],
                     xs=12, sm=6, md=3,
-                    className="text-center"
+                    className="text-center p-3"
                 )
             ],
             className="g-3"

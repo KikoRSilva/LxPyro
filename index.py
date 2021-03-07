@@ -5,9 +5,10 @@ import plotly.graph_objs as go
 import plotly.express as px
 from dash.dependencies import Input, Output
 import pandas as pd
+import sqlite3 as sql
 
 # connect to main app.py file
-from app import app
+from app import app, DATABASE
 from app import server
 
 # connect to app pages
@@ -96,22 +97,17 @@ content = html.Div(
 @app.callback(Output('main-products', 'figure'),
               [Input('graph-update', 'n_intervals')])
 def update_graph_products(n):
-    df = pd.read_csv('./data/products.csv')
-    df['Initial Stock'] = df['Initial_Stock / Units']
-    df['Current Stock'] = df['Current_Stock']
+    con = sql.connect(DATABASE)
+    # Load the data into a DataFrame
+    df = pd.read_sql_query("SELECT name, in_stock from Product", con)
 
     barchart_products = go.Figure(
         data=[
             go.Bar(
                 name='Initial Stock',
-                x=df['Product'],
-                y=df['Initial Stock'],
+                x=df['name'],
+                y=df['in_stock'],
                 marker_color='#ff8100'
-            ),
-            go.Bar(
-                name='Current Stock',
-                x=df['Product'],
-                y=df['Current Stock'],
             ),
         ],
         layout=go.Layout(
@@ -145,27 +141,24 @@ def update_graph_products(n):
 @app.callback(Output('main-sales', 'figure'),
               [Input('graph-update', 'n_intervals')])
 def update_graph_sales(n):
-    df = pd.read_csv('./data/sales.csv')
-    # print(df.shape[0])
-    df['Date'] = pd.to_datetime(df['Date'], format="%d/%m/%Y")
-    # print(df['Date'])
-    df['Year'] = df['Date'].dt.year
-    df['Month'] = df['Date'].dt.month
-    df['Day'] = df['Date'].dt.day
-    # print(df.head())
+    con = sql.connect(DATABASE)
+    # Load the data into a DataFrame
+    df = pd.read_sql_query("SELECT strftime('%m',time_created) as month, sum(sale_amount_paid) as total FROM Sale GROUP by month", con)
 
-    sales = df.groupby(df['Date'].dt.strftime('%B'))['Cost'].sum()
-    months = df['Month'].unique()
-    print(sales.head())
-    print(months)
-
-    barchart_sales = px.bar(
-        data_frame=df,
-        x=months,
-        y=sales,
-        labels={'y': 'Total Revenue', 'x': 'Month'},
-        title='Sales',
-
+    barchart_sales = go.Figure(
+        data=[
+            go.Bar(
+                name='Months',
+                x=df['month'],
+                y=df['total'],
+                marker_color='#ff8100',
+            ),
+        ],
+        layout=go.Layout(
+            title='Sales',
+            yaxis_title='Total Revenue',
+            xaxis_title='Months'
+        ),
     )
 
     barchart_sales.update_layout(
@@ -183,7 +176,7 @@ def update_graph_sales(n):
         paper_bgcolor='rgba(0,0,0,0)',
         font_color='rgba(255,255,255,1)',
         font_family='Poppins',
-        bargap=0.25
+        bargap=0.25,
     )
 
     barchart_sales.update_traces(marker_color='#fc3512')

@@ -31,14 +31,12 @@ def add_customer(cursor, connection, name, phone, insta, age, address):
         -   Local path to image of the product
 """
 def add_product(cursor, connection, name, price_per_unit, basic_unit, limited, stock, active_for_sale, image_url,
-                description):
-
-
+                description, category):
     cursor.execute(
         """
-            INSERT INTO Product VALUES(NULL,?,?,?,?,?,?,?,?)
+            INSERT INTO Product VALUES(NULL,?,?,?,?,?,?,?,?,?)
         """,
-        (name, price_per_unit, basic_unit, limited, stock, active_for_sale, image_url, description)
+        (name, price_per_unit, basic_unit, limited, stock, active_for_sale, image_url, description, category)
     )
     connection.commit()
 
@@ -53,12 +51,12 @@ def add_product(cursor, connection, name, price_per_unit, basic_unit, limited, s
         -   Amount paid of the sale
         -   Customer ID that made the sale
 """
-def register_sale_sql(cursor, connection, time_created, date_to_deliver, sale_amount, sale_amount_paid, customer_id, address):
+def register_sale_sql(cursor, connection, date_to_deliver, sale_amount, sale_amount_paid, customer_id, address):
     cursor.execute(
         """
-            INSERT INTO Sale VALUES(NULL,?,?,?,?,?,?)
+            INSERT INTO Sale VALUES(NULL,datetime('now'),?,?,?,?,?)
         """,
-        (time_created, date_to_deliver, sale_amount, sale_amount_paid, customer_id, address)
+        (date_to_deliver, sale_amount, sale_amount_paid, customer_id, address)
     )
     connection.commit()
 
@@ -168,8 +166,8 @@ def get_product_stock(cursor, connection, product):
     cursor.execute("SELECT DISTINCT in_stock FROM Product WHERE name=?", (product,))
     return cursor.fetchone()
 
-def get_sale_id(cursor, connection, time):
-    cursor.execute("SELECT DISTINCT id FROM Sale WHERE time_created=?", (time,))
+def get_last_sale_id(cursor):
+    cursor.execute("SELECT id FROM Sale WHERE ID = (SELECT MAX(id) FROM Sale)")
     return cursor.fetchone()
 
 def get_product_id(cursor, connection, product):
@@ -181,20 +179,36 @@ def get_customer_id(cursor, connection, customer):
     return cursor.fetchone()
 
 def update_product_stock(cursor, connection, id, product, quantity):
-    current_stock = get_product_stock(cursor, connection, product)[0]
-    total = current_stock - quantity
-    cursor.execute("UPDATE Product SET in_stock=? WHERE id=?", (total, id))
+    cursor.execute("UPDATE Product SET in_stock=in_stock-? WHERE id=?", (quantity, id))
     connection.commit()
 
 def set_sale_status(cursor, connection, status):
-    cursor.execute(
-        """
-            INSERT INTO Sale_Status VALUES (NULL, ?)
-        """,
-        (status,)
-    )
+    cursor.execute("INSERT INTO Sale_Status VALUES (NULL, ?)", (status,))
     connection.commit()
 
 def update_customer_sale_amount(cursor, connection, customer_id, sale_amount):
     cursor.execute("UPDATE Customer SET sales_amount=sales_amount+? WHERE id=?", (sale_amount, customer_id))
     connection.commit()
+
+def get_all_categories(cursor):
+    cursor.execute("SELECT * FROM Category")
+    categories_options = []
+    categories = cursor.fetchall()
+    for category in categories:
+        categories_options.append({"label": category[1], "value": category[0]})
+    return categories_options
+
+def get_product_image(cursor, id):
+    cursor.execute("SELECT ImageUrl FROM Product WHERE id = id")
+    return cursor.fetchone()
+
+def get_product_name(cursor, id):
+    cursor.execute("SELECT name FROM Product WHERE id = id")
+    return cursor.fetchone()
+
+def get_most_sold_product(cursor):
+    cursor.execute("SELECT product_id, sum(quantity_sold) FROM sale_item GROUP BY product_id ORDER BY sum(quantity_sold) desc")
+    product_id, product_quantity = cursor.fetchone()
+    product_name = get_product_name(cursor, product_id)
+    product_image = get_product_image(cursor, product_id)
+    return product_name, product_quantity, product_image

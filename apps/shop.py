@@ -121,6 +121,17 @@ save_button = dbc.Button("Add", id="save_new_item_button", className="btn btn-da
 
 close_button_add_new = dbc.Button("Close", id="close_modal_add_new", className="btn btn-outline-danger")
 
+category_input = dbc.FormGroup(
+    [
+        dbc.Label("Category", html_for="category-row", width=3),
+        dbc.Col(
+            dcc.Dropdown(id="category-row", className="py-2"),
+            width=9
+        )
+    ],
+    row=True,
+)
+
 add_new_item_modal = dbc.Modal(
     [
         dbc.ModalHeader(
@@ -128,13 +139,13 @@ add_new_item_modal = dbc.Modal(
         ),
         dbc.ModalBody(
             [
-                name_input, description_input, price_input, unit_input,
+                name_input, category_input, description_input, price_input, unit_input,
                 limited_input, stock_input, active_input, image_upload
             ],
         ),
         dbc.ModalFooter(
             [
-                html.P(id="add-new-status", className="text-danger"),
+                html.Div(id="add-new-status", className="pt-3"),
                 save_button,
                 close_button_add_new,
 
@@ -198,7 +209,7 @@ new_sale_modal = dbc.Modal(
 
 
         ]),
-        dbc.ModalFooter(children=[html.P(id="new-sale-status", className="text-danger"), new_sale_save, new_sale_close])
+        dbc.ModalFooter(children=[html.Div(id="new-sale-status", className="pt-3"), new_sale_save, new_sale_close])
     ],
     backdrop="static",
     scrollable=True,
@@ -211,30 +222,9 @@ layout = html.Div(
             [
                 dbc.Row(
                     [
-                        dbc.Col(
-                            [
-                                add_new_item_button,
-                                add_new_item_modal,
-                            ],
-                            className="text-center",
-                            xs=4,
-                        ),
-                        dbc.Col(
-                            [
-                                modify_item_button,
-                                modify_item_modal,
-                            ],
-                            className="text-center",
-                            xs=4,
-                        ),
-                        dbc.Col(
-                            [
-                                new_sale_button,
-                                new_sale_modal,
-                            ],
-                            className="text-center",
-                            xs=4,
-                        ),
+                        dbc.Col([add_new_item_button, add_new_item_modal], className="text-center", xs=4),
+                        dbc.Col([modify_item_button, modify_item_modal], className="text-center", xs=4),
+                        dbc.Col([new_sale_button, new_sale_modal], className="text-center", xs=4),
                         dbc.Col(html.H1("Products", className="text-white text-center"), xs=12),
                         search_bar
                     ]
@@ -260,6 +250,12 @@ layout = html.Div(
                                     {'name':'Total Sales Amount €', 'id':'sale_amount'},
                                     {'name':'Total Sales Amount Paid €', 'id':'sale_amount_paid'},
                                 ],
+                                editable=False,
+                                sort_action="native",
+                                sort_mode="multi",
+                                row_deletable=False,
+                                row_selectable="multi",
+                                selected_rows=[],
                                 style_cell={
                                      'textAlign': 'center',
                                      'backgroundColor': 'rgb(50, 50, 50)',
@@ -359,13 +355,17 @@ def populate_products_card():
 
     return cards
 
-
 @app.callback(
     Output("card-group-area", "children"),
+    Output("category", "options"),
     [Input("cards-update", "n_intervals")]
 )
 def populate_cards(_):
-    return populate_products_card()
+    # CONNECT TO SQLITE3 DATABASE
+    connection = sql.connect(DATABASE)
+    cursor = connection.cursor()
+    categories = get_all_categories(cursor)
+    return populate_products_card(), categories
 
 
 @app.callback(Output("add-new-status", "children"),
@@ -379,52 +379,55 @@ def populate_cards(_):
                   Input("stock-row", "value"),
                   Input("active-row", "value"),
                   Input("new_item_uploader", "isCompleted"),
+                  Input("category-row", "value"),
               ],
               State("new_item_uploader", "fileNames")
               )
-def add_new_item(n, name, desc, price, unit, limited, stock, active, isCompleted, filename):
+def add_new_item(n, name, desc, price, unit, limited, stock, active, isCompleted, category, filename):
     # CONNECT TO SQLITE3 DATABASE
     connection = sql.connect(DATABASE)
     cursor = connection.cursor()
     if n:
         if name is None or len(name) > 20:
-            return "Enter a correct name."
+            return dbc.Alert("Enter a valid name", color="warning")
+        if category is None:
+            return dbc.Alert("Enter a valid category", color="warning")
         if desc is None:
-            return "Enter a correct description."
+            return dbc.Alert("Enter a valid description", color="warning")
         if price is None or price <= 0:
-            return "Enter a number bigger than 0 in price field."
+            return dbc.Alert("Enter a number bigger than 0 in price field", color="warning")
         if unit is None:
-            return "Enter a correct Basic Unit."
+            return dbc.Alert("Enter a valid basic unit", color="warning")
         if limited is None or limited != "yes" and limited != "no":
-            return "Enter 'yes' or 'no' in limited field."
+            return dbc.Alert("Enter 'yes' or 'no' in limited field", color="warning")
         if stock is None or stock < 0:
-            return "Enter a number equal or bigger than 0 in stock field."
+            return dbc.Alert("Enter a number equal or bigger than 0 in stock field", color="warning")
         if active is None or active != "yes" and active != "no":
-            return "Enter 'yes' or 'no' in active field."
+            return dbc.Alert("Enter 'yes' or 'no' in active field", color="warning")
         if not isCompleted:
-            return "Wait until file is uploaded."
+            return dbc.Alert("Wait until file is uploaded", color="warning")
         if filename is None:
-            return "No file uploaded yet."
+            return dbc.Alert("No file uploaded yet", color="warning")
         else:
-
             filename = "static/img/{}".format(filename[0])
-            for (dirpath, dirnames, filenames) in os.walk('./static/img/'):
-                print(dirpath, dirnames, filenames)
-                print('--------')
-            add_product(cursor, connection, name, price, unit, limited, stock, active, filename, desc)
-            print("added")
-            return "Added successfully"
+            add_product(cursor, connection, name, price, unit, limited, stock, active, filename, desc, category)
+            return dbc.Alert("Item Registered Successfully", color="success")
 
 
 @app.callback(
     Output("modal_add_new", "is_open"),
+    Output("category-row", "options"),
     [Input("add_new_item_btn", "n_clicks"), Input("close_modal_add_new", "n_clicks")],
     [State("modal_add_new", "is_open")],
 )
 def toggle_modal_new_item(n1, n2, is_open):
     if n1 or n2:
-        return not is_open
-    return is_open
+        # CONNECT TO SQLITE3 DATABASE
+        connection = sql.connect(DATABASE)
+        cursor = connection.cursor()
+        categories = get_all_categories(cursor)
+        return not is_open, categories
+    return is_open, []
 
 
 @app.callback(
@@ -514,42 +517,32 @@ def register_sale(n, product, quantity, date_value, address, customer):
         connection = sql.connect(DATABASE)
         cursor = connection.cursor()
         if customer is None:
-            return "Select a customer."
+            return dbc.Alert("Select a valid customer", color="warning")
         elif product is None:
-            return "Select a product."
+            return dbc.Alert("Select a valid product", color="warning")
         elif quantity is None or quantity <= 0:
-            return "Enter a valid quantity."
+            return dbc.Alert("Enter a valid quantity", color="warning")
         elif date_value is None:
-            return "Pick a date"
+            return dbc.Alert("Pick a valid date", color="warning")
         elif address is None:
-            return "Enter an address."
+            return dbc.Alert("Enter a valid address", color="warning")
         else:
             current_stock = get_product_stock(cursor, connection, product)[0]
             if current_stock - quantity < 0:
-                return "Not enough {} in stock.".format(product)
-
+                return dbc.Alert("Not enough {} in stock".format(product), color="warning")
             date_obj = date.fromisoformat(date_value)
             now = datetime.now()
-            current_time = now.strftime("%d/%m/%Y %H:%M:%S")
+            current_time = now.strftime("%d/%m/%Y")
             date_picked = date_obj.strftime("%d/%m/%Y")
             price = get_product_price(cursor, connection, product)[0]
             sale_amount = price * quantity
             customer_id = get_customer_id(cursor, connection, customer)[0]
-
-            print("CURRENT TIME = {} | DATE PICKED = {}".format(current_time, date_picked))
-            print("SALE AMOUNT = {}".format(sale_amount))
-            print("CUSTOMER ID = {}".format(customer_id))
-            print("ADDRESS = {}".format(address))
-            print("PRICE = {}".format(price))
-            print("QUANTITY = {}".format(quantity))
-            print(type(price))
-
-            register_sale_sql(cursor, connection, current_time, date_picked, sale_amount, sale_amount, customer_id, address)
-            sale_id = get_sale_id(cursor, connection, current_time)[0]
+            register_sale_sql(cursor, connection, date_picked, sale_amount, sale_amount, customer_id, address)
+            sale_id = get_last_sale_id(cursor)[0]
             product_id = get_product_id(cursor, connection, product)[0]
             register_sale_item(cursor, connection, quantity, price, sale_amount, sale_id, product_id)
             set_sale_status(cursor, connection, "Processing")
             update_customer_sale_amount(cursor, connection, customer_id, sale_amount)
             update_product_stock(cursor, connection, product_id, product, quantity)
-            return
+            return dbc.Alert("Sale Registered Successfully", color="success")
     return

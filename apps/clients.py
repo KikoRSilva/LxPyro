@@ -100,7 +100,7 @@ layout = html.Div(id="clients", children=[
                                  ],
                                  )
                 ], id="table", className="py-4"),
-                html.Div(children=[form], className="container"),
+                html.Div(children=[form], className="container my-5"),
                 dcc.Interval(id='update', interval=1000 * 1000, n_intervals=0),
             ], xs=12, className="text-center")
         ], className="py-3")
