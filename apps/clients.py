@@ -33,21 +33,24 @@ age_input = dbc.FormGroup(
 )
 
 address_input = dbc.FormGroup(children=[
-    dbc.Label([html.I(className="fas fa-map-marker-alt"), " Address"], html_for="address-row", width=4, className="text-dark"),
+    dbc.Label([html.I(className="fas fa-map-marker-alt"), " Address"], html_for="address-row", width=4,
+              className="text-dark"),
     dbc.Col(children=[
         dbc.Input(type="text", id="address-row", placeholder="Enter address"),
         ], width=8)
 ], row=True)
 
 phone_number_input = dbc.FormGroup(children=[
-    dbc.Label(children=[html.I(className="fas fa-phone-alt")], html_for="phone-number-row", width=4, className="text-dark text-center"),
+    dbc.Label(children=[html.I(className="fas fa-phone-alt")], html_for="phone-number-row", width=4,
+              className="text-dark text-center"),
     dbc.Col(children=[
         dbc.Input(type="number", id="phone-number-row", placeholder="Enter phone number")
     ], width=8)
 ], row=True)
 
 instagram_input = dbc.FormGroup(children=[
-    dbc.Label([html.I(className="fab fa-instagram text-dark"), " Instagram"], html_for="instagram-row", width=4, className="text-dark"),
+    dbc.Label([html.I(className="fab fa-instagram text-dark"), " Instagram"], html_for="instagram-row", width=4,
+              className="text-dark"),
     dbc.Col(children=[
         dbc.Input(type="text", id="instagram-row", placeholder="Enter Instagram's username")
     ], width=8)
@@ -58,15 +61,14 @@ title_form = html.H3("Register New Client", className="text-dark text-center tex
 register_button = dbc.FormGroup(children=[
     dbc.Col(children=[
         dbc.Button(children=[html.I(className="fas fa-plus text-white"), " Register"],
-               className="btn btn-danger btn-block btn-lg", id="register-button"),
+                   className="btn btn-danger btn-block btn-lg", id="register-button"),
         html.Div(id="register-status")
     ], width=12)
 ], className="text-center p-3", row=True)
 
 
-
-form = dbc.Form([title_form, name_input, phone_number_input, instagram_input, age_input, address_input, register_button],
-                id="new-client-form")
+form = dbc.Form([title_form, name_input, phone_number_input, instagram_input,
+                 age_input, address_input, register_button], id="new-client-form")
 
 layout = html.Div(id="clients", children=[
     html.Div(className="container", children=[
@@ -76,14 +78,14 @@ layout = html.Div(id="clients", children=[
                 html.A([html.I(className="fas fa-plus text-white subtitle p-4")], href="/apps/clients#new-client-form"),
                 html.A([html.I(className="fas fa-sync-alt text-white subtitle p-4")], href="/apps/clients"),
                 html.Div(children=[
-                    dt.DataTable(id="clients-datatable",columns=[
-                        {'name':'ID', 'id':'id'},
-                        {'name':'Name', 'id':'name'},
+                    dt.DataTable(id="clients-datatable", columns=[
+                        {'name': 'ID', 'id': 'id'},
+                        {'name': 'Name', 'id': 'name'},
                         {'name': 'Instagram', 'id': 'Instagram'},
-                        {'name':'Age', 'id':'age'},
-                        {'name':'Address', 'id':'address'},
-                        {'name':'Phone Number', 'id':'PhoneNumber'},
-                        {'name':'Total Sales Amount', 'id':'sales_amount'},
+                        {'name': 'Age', 'id': 'age'},
+                        {'name': 'Address', 'id': 'address'},
+                        {'name': 'Phone Number', 'id': 'PhoneNumber'},
+                        {'name': 'Total Sales Amount', 'id': 'sales_amount'},
                     ],
                                  style_cell={
                                      'textAlign': 'center',
@@ -109,12 +111,13 @@ layout = html.Div(id="clients", children=[
 
 
 @app.callback(Output("clients-datatable", "data"), Input("update", "n_intervals"))
-def client_table_update(n):
+def client_table_update(_):
     con = sql.connect(DATABASE)
     # Load the data into a DataFrame
     df = pd.read_sql_query("SELECT * from Customer", con)
     con.close()
     return df.to_dict('records')
+
 
 @app.callback(Output("register-status", "children"),
               [

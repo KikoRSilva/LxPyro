@@ -1,4 +1,3 @@
-import dash_core_components as dcc
 import dash_html_components as html
 
 layout = html.Div(
@@ -14,7 +13,7 @@ layout = html.Div(
                             className="text-white text-center title pt-5"
                         ),
                         html.H4(
-                            'Ups ... Não devias estar nesta página!',
+                            'Ups ... You are lost! Go back now!',
                             className="text-white subtitle",
                         )
                     ]
@@ -23,5 +22,3 @@ layout = html.Div(
         )
     ]
 )
-
-

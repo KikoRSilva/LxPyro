@@ -1,16 +1,15 @@
 from datetime import datetime, date
-import os
 import pandas as pd
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 import dash_html_components as html
 import dash_uploader as du
 import dash_table as dt
+import sqlite3 as sql
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 
-from app import app
-from components.searchbar import search_bar
+from app import app, DATABASE
 from sql_functions import *
 
 add_new_item_button = dbc.Button(
@@ -24,7 +23,7 @@ add_new_item_button = dbc.Button(
 name_input = dbc.FormGroup(
     [
         dbc.Label("Name", html_for="name-row", width=2),
-        dbc.Col(dbc.Input(type="text", id="name-row", placeholder="Enter name"),width=10)
+        dbc.Col(dbc.Input(type="text", id="name-row", placeholder="Enter name"), width=10)
     ], row=True,
 )
 
@@ -117,19 +116,20 @@ choose_item = dbc.FormGroup([dbc.Label("Choose the item:", width=5),
 edit_name = dbc.FormGroup([dbc.Label("Name", html_for="name-edit", width=2),
                            dbc.Col(dbc.Input(type="text", id="name-edit"), width=10)], row=True)
 edit_price_per_unit = dbc.FormGroup([dbc.Label("Price per unit", html_for="price-per-unit-edit", width=5),
-                           dbc.Col(dbc.Input(type="number", id="price-per-unit-edit"), width=7)], row=True)
+                                     dbc.Col(dbc.Input(type="number", id="price-per-unit-edit"), width=7)], row=True)
 edit_basic_unit = dbc.FormGroup([dbc.Label("Basic Unit", html_for="basic-unit-edit", width=3),
-                           dbc.Col(dbc.Input(type="text", id="basic-unit-edit"), width=9)], row=True)
+                                 dbc.Col(dbc.Input(type="text", id="basic-unit-edit"), width=9)], row=True)
 edit_limited = dbc.FormGroup([dbc.Label("Limited", html_for="limited-edit", width=2),
-                           dbc.Col(dbc.Input(type="text", id="limited-edit", placeholder="Enter 'yes' or 'no'"),
-                                   width=10)], row=True)
+                              dbc.Col(dbc.Input(type="text", id="limited-edit", placeholder="Enter 'yes' or 'no'"),
+                                      width=10)], row=True)
 edit_active_for_sale = dbc.FormGroup([dbc.Label("Active for sale", html_for="active-for-sale-edit", width=5),
-                           dbc.Col(dbc.Input(type="text", id="active-for-sale-edit", placeholder="Enter 'yes' or 'no'"),
-                                   width=7)], row=True)
+                                      dbc.Col(dbc.Input(type="text", id="active-for-sale-edit",
+                                                        placeholder="Enter 'yes' or 'no'"),
+                                              width=7)], row=True)
 image_upload_edit = du.Upload(id='edit_item_uploader', filetypes=['png', 'jpg', 'jpeg', 'gif'],
                               text="Drag and Drop Here to Change Image!")
 edit_description = dbc.FormGroup([dbc.Label("Description", html_for="description-edit", width=3),
-                           dbc.Col(dbc.Input(type="text", id="description-edit"), width=9)], row=True)
+                                  dbc.Col(dbc.Input(type="text", id="description-edit"), width=9)], row=True)
 modify_item_modal = dbc.Modal(
     [
         dbc.ModalHeader("MODIFY ITEM FROM THE STORE"),
@@ -147,8 +147,9 @@ modify_item_modal = dbc.Modal(
     ], backdrop="static", scrollable=True, id="modal_modify"
 )
 
+
 @app.callback(Output("edit-item-status", "children"),
-               [Input("save_modal_modify", "n_clicks"),
+              [Input("save_modal_modify", "n_clicks"),
                Input("choose-item-dp", "value"),
                Input("name-edit", "value"),
                Input("description-edit", "value"),
@@ -185,6 +186,8 @@ def save_item_modifications(save, product, name, description, price_per_unit, ba
             update_product_name(cursor, connection, product, name)
         return dbc.Alert("All changes where saved!", color='success')
     return
+
+
 ######################################################################################################
 # NEW SALE MODAL
 new_sale_button = dbc.Button(children=[html.I(className="fas fa-plus text-white"), " NEW SALE"], id="new_sale_button",
@@ -195,7 +198,8 @@ new_sale_modal = dbc.Modal(
     [
         dbc.ModalHeader("REGISTER NEW SALE"),
         dbc.ModalBody(children=[
-            dcc.Dropdown(id="customers_dropdown", className="py-2", searchable=True, placeholder="Select a customer..."),
+            dcc.Dropdown(id="customers_dropdown", className="py-2", searchable=True,
+                         placeholder="Select a customer..."),
             dcc.Dropdown(id="products_dropdown", className="py-2", searchable=True, placeholder="Select a product..."),
             dbc.InputGroup([
                 dbc.Input(type="number", id="product_quantity", placeholder="Quantity"),
@@ -212,7 +216,6 @@ new_sale_modal = dbc.Modal(
                                     className="pt-3 pr-1"),
                 dbc.Input(placeholder="Address", id="address")
             ], className="py-2"),
-
 
         ]),
         dbc.ModalFooter(children=[html.Div(id="new-sale-status", className="pt-3"), new_sale_save, new_sale_close])
@@ -244,38 +247,38 @@ layout = html.Div(
                 dbc.Row([
                     dbc.Col(html.H1("Sales", className="text-white text-center title fw-bold py-4"), xs=12),
                     dbc.Col([
-                            dt.DataTable(
-                                id="sales-datatable",
-                                columns=[
-                                    {'name':'ID', 'id':'id'},
-                                    {'name':'Customer ID', 'id':'customer_id'},
-                                    {'name':'Address', 'id':'address'},
-                                    {'name':'Time registered', 'id':'time_created'},
-                                    {'name': 'Date to Deliver', 'id': 'date_to_deliver'},
-                                    {'name':'Total Sales Amount €', 'id':'sale_amount'},
-                                    {'name':'Total Sales Amount Paid €', 'id':'sale_amount_paid'},
-                                ],
-                                editable=False,
-                                sort_action="native",
-                                sort_mode="multi",
-                                row_deletable=False,
-                                row_selectable="multi",
-                                selected_rows=[],
-                                style_cell={
-                                     'textAlign': 'center',
-                                     'backgroundColor': 'rgb(50, 50, 50)',
-                                     'color': 'white'
-                                },
-                                style_as_list_view=True,
-                                style_header={'backgroundColor': '#313131'},
-                                style_data_conditional=[
-                                    {
-                                         'if': {'row_index': 'odd'},
-                                         'backgroundColor': '#646464'
-                                    }
-                                ],
-                            ),
-                            dcc.Interval(id='update', interval=1000 * 1000, n_intervals=0),
+                        dt.DataTable(
+                            id="sales-datatable",
+                            columns=[
+                                {'name': 'ID', 'id': 'id'},
+                                {'name': 'Customer ID', 'id': 'customer_id'},
+                                {'name': 'Address', 'id': 'address'},
+                                {'name': 'Time registered', 'id': 'time_created'},
+                                {'name': 'Date to Deliver', 'id': 'date_to_deliver'},
+                                {'name': 'Total Sales Amount €', 'id': 'sale_amount'},
+                                {'name': 'Total Sales Amount Paid €', 'id': 'sale_amount_paid'},
+                            ],
+                            editable=False,
+                            sort_action="native",
+                            sort_mode="multi",
+                            row_deletable=False,
+                            row_selectable="multi",
+                            selected_rows=[],
+                            style_cell={
+                                'textAlign': 'center',
+                                'backgroundColor': 'rgb(50, 50, 50)',
+                                'color': 'white'
+                            },
+                            style_as_list_view=True,
+                            style_header={'backgroundColor': '#313131'},
+                            style_data_conditional=[
+                                {
+                                    'if': {'row_index': 'odd'},
+                                    'backgroundColor': '#646464'
+                                }
+                            ],
+                        ),
+                        dcc.Interval(id='update', interval=1000 * 1000, n_intervals=0),
                     ], xs=12, className="mb-5")
                 ])
             ]
@@ -283,8 +286,9 @@ layout = html.Div(
     ],
 )
 
+
 @app.callback(Output("sales-datatable", "data"), Input("update", "n_intervals"))
-def client_table_update(n):
+def client_table_update(_):
     con = sql.connect(DATABASE)
     # Load the data into a DataFrame
     df = pd.read_sql_query("SELECT * from Sale", con)
@@ -297,7 +301,7 @@ def populate_products_card():
     connection = sql.connect(DATABASE)
     cursor = connection.cursor()
 
-    rows = get_all_products(cursor, connection)
+    rows = get_all_products(cursor)
 
     cards = []
     for row in rows:
@@ -343,7 +347,7 @@ def populate_products_card():
         else:
             card = html.Div([dbc.Card(
                 [
-                    dbc.CardImg(src=url, top=True, className="img-fluid",),
+                    dbc.CardImg(src=url, top=True, className="img-fluid", ),
                     dbc.CardBody(
                         [
                             html.H3("{} (not for sale)".format(name), className="card-title text-uppercase fw-bold"),
@@ -360,14 +364,12 @@ def populate_products_card():
 
     return cards
 
+
 @app.callback(
     Output("card-group-area", "children"),
     [Input("cards-update", "n_intervals")]
 )
 def populate_cards(_):
-    # CONNECT TO SQLITE3 DATABASE
-    connection = sql.connect(DATABASE)
-    cursor = connection.cursor()
     return populate_products_card()
 
 
@@ -467,8 +469,8 @@ def populate_products_list(n):
         # CONNECT TO SQLITE3 DATABASE
         connection = sql.connect(DATABASE)
         cursor = connection.cursor()
-        products = get_products_list(cursor, connection)
-        customers = get_customers_list(cursor, connection)
+        products = get_products_list(cursor)
+        customers = get_customers_list(cursor)
         for product in products:
             products_options.append({"label": product[0], "value": product[0]})
         for customer in customers:
@@ -492,7 +494,7 @@ def calculate_sale_amount(name, quantity, calc):
                 # CONNECT TO SQLITE3 DATABASE
                 connection = sql.connect(DATABASE)
                 cursor = connection.cursor()
-                price = get_product_price(cursor, connection, name)
+                price = get_product_price(cursor, name)
                 print(price)
                 total_cost = price[0] * quantity
                 print(total_cost)
@@ -505,12 +507,12 @@ def calculate_sale_amount(name, quantity, calc):
 @app.callback(
     Output("new-sale-status", "children"),
     [
-          Input("new_sale_save", "n_clicks"),
-          Input("products_dropdown", "value"),
-          Input("product_quantity", "value"),
-          Input("date-to-deliver", "date"),
-          Input("address", "value"),
-          Input("customers_dropdown", "value")
+        Input("new_sale_save", "n_clicks"),
+        Input("products_dropdown", "value"),
+        Input("product_quantity", "value"),
+        Input("date-to-deliver", "date"),
+        Input("address", "value"),
+        Input("customers_dropdown", "value")
     ]
 )
 def register_sale(n, product, quantity, date_value, address, customer):
@@ -530,23 +532,21 @@ def register_sale(n, product, quantity, date_value, address, customer):
         elif address is None:
             return dbc.Alert("Enter a valid address", color="warning")
         else:
-            current_stock = get_product_stock(cursor, connection, product)[0]
+            current_stock = get_product_stock(cursor, product)[0]
             if current_stock - quantity < 0:
                 return dbc.Alert("Not enough {} in stock".format(product), color="warning")
             date_obj = date.fromisoformat(date_value)
-            now = datetime.now()
-            current_time = now.strftime("%d/%m/%Y")
             date_picked = date_obj.strftime("%d/%m/%Y")
-            price = get_product_price(cursor, connection, product)[0]
+            price = get_product_price(cursor, product)[0]
             sale_amount = price * quantity
-            customer_id = get_customer_id(cursor, connection, customer)[0]
+            customer_id = get_customer_id(cursor, customer)[0]
             register_sale_sql(cursor, connection, date_picked, sale_amount, sale_amount, customer_id, address)
             sale_id = get_last_sale_id(cursor)[0]
-            product_id = get_product_id(cursor, connection, product)[0]
+            product_id = get_product_id(cursor, product)[0]
             register_sale_item(cursor, connection, quantity, price, sale_amount, sale_id, product_id)
-            set_sale_status(cursor, connection, "Processing")
+            set_sale_status(cursor, connection,  "Processing")
             update_customer_sale_amount(cursor, connection, customer_id, sale_amount)
-            update_product_stock(cursor, connection, product_id, product, quantity)
+            update_product_stock(cursor, connection, product_id, quantity)
             return dbc.Alert("Sale Registered Successfully", color="success")
     return
 
@@ -574,8 +574,8 @@ def populate_placeholders(product_name):
     connection = sql.connect(DATABASE)
     cursor = connection.cursor()
     description = get_product_description(cursor, product_name)
-    price_per_unit = get_product_price(cursor, connection, product_name)
+    price_per_unit = get_product_price(cursor, product_name)
     basic_unit = get_product_basic_unit(cursor, product_name)
     if price_per_unit:
         return product_name, description, "{} €".format(price_per_unit[0]), basic_unit
-    return ['','','','']
+    return ['', '', '', '']

@@ -26,8 +26,10 @@ layout = html.Div(id="dashboard", children=[
                                 ),
                                 dbc.Row([
                                     dbc.Col(children=[
-                                        html.H4(id="most-sold-product-name", className="text-uppercase text-dark text-center fw-bold"),
-                                        html.H1(id="most-sold-product-quantity", className="text-danger text-center fw-bold"),
+                                        html.H4(id="most-sold-product-name",
+                                                className="text-uppercase text-dark text-center fw-bold"),
+                                        html.H1(id="most-sold-product-quantity",
+                                                className="text-danger text-center fw-bold"),
                                         html.H5("Units", className="text-dark text-center fw-bold")
                                     ], xs=12),
                                 ], className="py-2")
@@ -201,10 +203,11 @@ def populate_products_sale_per_month(_):
             for a in data:
                 if a['name'] == info[0]:
                     a['x'].append(info[1])
-                    a['y'].append[info[2]]
+                    a['y'].append(info[2])
 
     figure = {'data': data}
     return figure
+
 
 def get_month_name(number):
     switcher = {
@@ -222,4 +225,3 @@ def get_month_name(number):
         '12': "December"
     }
     return switcher.get(number, "Invalid Month")
-
