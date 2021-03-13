@@ -32,3 +32,7 @@
   ::-webkit-scrollbar-thumb:hover {
     background: #b30000; 
   }
+
+.fs-4 {
+    font-size: 1em;
+}

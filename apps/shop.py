@@ -17,101 +17,56 @@ add_new_item_button = dbc.Button(
     id="add_new_item_btn",
     type="button",
     className="btn btn-danger m-5",
-    children=[
-        html.I(className="fas fa-plus text-white"),
-        " New Item",
-
-    ]
+    children=[html.I(className="fas fa-plus text-white"), " New Item"]
 )
 
 # MODAL FORM INPUT
 name_input = dbc.FormGroup(
     [
         dbc.Label("Name", html_for="name-row", width=2),
-        dbc.Col(
-            dbc.Input(
-                type="text", id="name-row", placeholder="Enter name"
-            ),
-            width=10
-        )
-    ],
-    row=True,
+        dbc.Col(dbc.Input(type="text", id="name-row", placeholder="Enter name"),width=10)
+    ], row=True,
 )
 
 description_input = dbc.FormGroup(
     [
         dbc.Label("Description", html_for="description-row", width=3),
-        dbc.Col(
-            dbc.Textarea(
-                id="description-row", placeholder="Enter description"
-            ),
-            width=9
-        )
-    ],
-    row=True,
+        dbc.Col(dbc.Textarea(id="description-row", placeholder="Enter description"), width=9)
+    ], row=True,
 )
 
 price_input = dbc.FormGroup(
     [
         dbc.Label("Price per Unit", html_for="price-row", width=4),
-        dbc.Col(
-            dbc.Input(
-                type="number", id="price-row", placeholder="Enter price"
-            ),
-            width=8
-        )
-    ],
-    row=True,
+        dbc.Col(dbc.Input(type="number", id="price-row", placeholder="Enter price"), width=8)
+    ], row=True,
 )
 
 unit_input = dbc.FormGroup(
     [
         dbc.Label("Basic Unit", html_for="unit-row", width=2),
-        dbc.Col(
-            dbc.Input(
-                type="text", id="unit-row", placeholder="Enter unit"
-            ),
-            width=10
-        )
-    ],
-    row=True,
+        dbc.Col(dbc.Input(type="text", id="unit-row", placeholder="Enter unit"), width=10)
+    ], row=True,
 )
 
 limited_input = dbc.FormGroup(
     [
         dbc.Label("Limited", html_for="limited-row", width=2),
-        dbc.Col(
-            dbc.Input(
-                type="text", id="limited-row", placeholder="Enter 'yes' or 'no'"
-            ),
-            width=10
-        )
-    ],
-    row=True,
+        dbc.Col(dbc.Input(type="text", id="limited-row", placeholder="Enter 'yes' or 'no'"), width=10)
+    ], row=True,
 )
 
 stock_input = dbc.FormGroup(
     [
         dbc.Label("In stock", html_for="stock-row", width=3),
-        dbc.Col(
-            dbc.Input(
-                type="number", id="stock-row", placeholder="Enter stock"
-            ),
-            width=9
-        )
-    ],
-    row=True,
+        dbc.Col(dbc.Input(type="number", id="stock-row", placeholder="Enter stock"), width=9)
+    ], row=True,
 )
 
 active_input = dbc.FormGroup(
     [
         dbc.Label("Active for sale", html_for="active-row", width=3),
-        dbc.Col(
-            dbc.Input(
-                type="text", id="active-row", placeholder="Enter 'yes' or 'no'"
-            ),
-            width=9
-        )
+        dbc.Col(dbc.Input(type="text", id="active-row", placeholder="Enter 'yes' or 'no'"), width=9)
     ]
 )
 
@@ -124,19 +79,13 @@ close_button_add_new = dbc.Button("Close", id="close_modal_add_new", className="
 category_input = dbc.FormGroup(
     [
         dbc.Label("Category", html_for="category-row", width=3),
-        dbc.Col(
-            dcc.Dropdown(id="category-row", className="py-2"),
-            width=9
-        )
-    ],
-    row=True,
+        dbc.Col(dcc.Dropdown(id="category-row", className="py-2"), width=9)
+    ], row=True,
 )
 
 add_new_item_modal = dbc.Modal(
     [
-        dbc.ModalHeader(
-            "ADD NEW ITEM TO THE STORE",
-        ),
+        dbc.ModalHeader("ADD NEW ITEM TO THE STORE"),
         dbc.ModalBody(
             [
                 name_input, category_input, description_input, price_input, unit_input,
@@ -147,14 +96,10 @@ add_new_item_modal = dbc.Modal(
             [
                 html.Div(id="add-new-status", className="pt-3"),
                 save_button,
-                close_button_add_new,
-
+                close_button_add_new
             ]
         )
-    ],
-    backdrop="static",
-    scrollable=True,
-    id="modal_add_new"
+    ], backdrop="static", scrollable=True, id="modal_add_new"
 )
 
 ########################################################################################################################
@@ -162,26 +107,87 @@ modify_item_button = dbc.Button(
     id="modify_item_btn",
     type="button",
     className="btn btn-danger m-5",
-    children=[
-        html.I(className="fas fa-tools text-white"),
-        " Modify Item",
-    ]
+    children=[html.I(className="fas fa-tools text-white"), " Modify Item"]
 )
-close_button_modify = dbc.Button("Close", id="close_modal_modify", className="btn btn-outline-danger")
-
+close_button_modify = dbc.Button("Close", id="close_modal_modify", className="btn btn-outline-danger", type="button")
+save_button_modify = dbc.Button("Save", id="save_modal_modify", className="btn btn-danger", type="button")
+choose_item = dbc.FormGroup([dbc.Label("Choose the item:", width=5),
+                             dbc.Col(dcc.Dropdown(id="choose-item-dp", className="pt-2", clearable=False), width=7)],
+                            row=True)
+edit_name = dbc.FormGroup([dbc.Label("Name", html_for="name-edit", width=2),
+                           dbc.Col(dbc.Input(type="text", id="name-edit"), width=10)], row=True)
+edit_price_per_unit = dbc.FormGroup([dbc.Label("Price per unit", html_for="price-per-unit-edit", width=5),
+                           dbc.Col(dbc.Input(type="number", id="price-per-unit-edit"), width=7)], row=True)
+edit_basic_unit = dbc.FormGroup([dbc.Label("Basic Unit", html_for="basic-unit-edit", width=3),
+                           dbc.Col(dbc.Input(type="text", id="basic-unit-edit"), width=9)], row=True)
+edit_limited = dbc.FormGroup([dbc.Label("Limited", html_for="limited-edit", width=2),
+                           dbc.Col(dbc.Input(type="text", id="limited-edit", placeholder="Enter 'yes' or 'no'"),
+                                   width=10)], row=True)
+edit_active_for_sale = dbc.FormGroup([dbc.Label("Active for sale", html_for="active-for-sale-edit", width=5),
+                           dbc.Col(dbc.Input(type="text", id="active-for-sale-edit", placeholder="Enter 'yes' or 'no'"),
+                                   width=7)], row=True)
+image_upload_edit = du.Upload(id='edit_item_uploader', filetypes=['png', 'jpg', 'jpeg', 'gif'],
+                              text="Drag and Drop Here to Change Image!")
+edit_description = dbc.FormGroup([dbc.Label("Description", html_for="description-edit", width=3),
+                           dbc.Col(dbc.Input(type="text", id="description-edit"), width=9)], row=True)
 modify_item_modal = dbc.Modal(
     [
         dbc.ModalHeader("MODIFY ITEM FROM THE STORE"),
-        dbc.ModalBody(),
-        dbc.ModalFooter([close_button_modify])
-    ],
-    backdrop="static",
-    scrollable=True,
-    id="modal_modify"
+        dbc.ModalBody(children=[
+            choose_item,
+            edit_name,
+            edit_description,
+            edit_price_per_unit,
+            edit_basic_unit,
+            edit_limited,
+            edit_active_for_sale,
+            image_upload_edit,
+        ]),
+        dbc.ModalFooter([html.Div(id="edit-item-status", className="pt-3"), save_button_modify, close_button_modify])
+    ], backdrop="static", scrollable=True, id="modal_modify"
 )
-######################################################################################################
 
-new_sale_button = dbc.Button(children=[html.I(className="fas fa-plus text-white"), " NEW SALE", ], id="new_sale_button",
+@app.callback(Output("edit-item-status", "children"),
+               [Input("save_modal_modify", "n_clicks"),
+               Input("choose-item-dp", "value"),
+               Input("name-edit", "value"),
+               Input("description-edit", "value"),
+               Input("price-per-unit-edit", "value"),
+               Input("basic-unit-edit", "value"),
+               Input("limited-edit", "value"),
+               Input("active-for-sale-edit", "value")],
+              [State("edit_item_uploader", "fileNames")])
+def save_item_modifications(save, product, name, description, price_per_unit, basic_unit,
+                            limited, active_for_sale, ImageUrl):
+    if save:
+        # CONNECT TO SQLITE3 DATABASE
+        connection = sql.connect(DATABASE)
+        cursor = connection.cursor()
+        if description is not None:
+            update_product_description(cursor, connection, product, description)
+        if price_per_unit is not None and price_per_unit > 0:
+            update_product_price_per_unit(cursor, connection, product, price_per_unit)
+        elif price_per_unit is not None and price_per_unit <= 0:
+            return dbc.Alert("Enter a valid price!", color="warning")
+        if basic_unit is not None:
+            update_product_basic_unit(cursor, connection, product, basic_unit)
+        if limited is not None and limited in ['yes', 'no']:
+            update_product_limited(cursor, connection, product, limited)
+        elif limited is not None and limited not in ['yes', 'no']:
+            return dbc.Alert("Enter 'yes' or 'no'!", color="warning")
+        if active_for_sale is not None and active_for_sale in ['yes', 'no']:
+            update_product_active_for_sale(cursor, connection, product, active_for_sale)
+        elif active_for_sale is not None and active_for_sale not in ['yes', 'no']:
+            dbc.Alert("Enter 'yes' or 'no'!", color="warning")
+        if ImageUrl is not None:
+            update_product_ImageUrl(cursor, connection, product, ImageUrl)
+        if name is not None:
+            update_product_name(cursor, connection, product, name)
+        return dbc.Alert("All changes where saved!", color='success')
+    return
+######################################################################################################
+# NEW SALE MODAL
+new_sale_button = dbc.Button(children=[html.I(className="fas fa-plus text-white"), " NEW SALE"], id="new_sale_button",
                              className="btn btn-danger m-5", type="button")
 new_sale_save = dbc.Button("Register", id="new_sale_save", className="btn btn-danger", type="button")
 new_sale_close = dbc.Button("Close", id="new_sale_close", className="btn btn-outline-danger", type="button")
@@ -225,8 +231,7 @@ layout = html.Div(
                         dbc.Col([add_new_item_button, add_new_item_modal], className="text-center", xs=4),
                         dbc.Col([modify_item_button, modify_item_modal], className="text-center", xs=4),
                         dbc.Col([new_sale_button, new_sale_modal], className="text-center", xs=4),
-                        dbc.Col(html.H1("Products", className="text-white text-center"), xs=12),
-                        search_bar
+                        dbc.Col(html.H1("Products", className="text-white fw-bold title text-center"), xs=12),
                     ]
                 ),
                 dbc.Row(
@@ -237,7 +242,7 @@ layout = html.Div(
                     className="my-4"
                 ),
                 dbc.Row([
-                    dbc.Col(html.H1("Sales", className="text-white text-center"), xs=12),
+                    dbc.Col(html.H1("Sales", className="text-white text-center title fw-bold py-4"), xs=12),
                     dbc.Col([
                             dt.DataTable(
                                 id="sales-datatable",
@@ -357,15 +362,13 @@ def populate_products_card():
 
 @app.callback(
     Output("card-group-area", "children"),
-    Output("category", "options"),
     [Input("cards-update", "n_intervals")]
 )
 def populate_cards(_):
     # CONNECT TO SQLITE3 DATABASE
     connection = sql.connect(DATABASE)
     cursor = connection.cursor()
-    categories = get_all_categories(cursor)
-    return populate_products_card(), categories
+    return populate_products_card()
 
 
 @app.callback(Output("add-new-status", "children"),
@@ -546,3 +549,33 @@ def register_sale(n, product, quantity, date_value, address, customer):
             update_product_stock(cursor, connection, product_id, product, quantity)
             return dbc.Alert("Sale Registered Successfully", color="success")
     return
+
+
+@app.callback(Output("choose-item-dp", "options"), [Input("update", "n_intervals")])
+def populate_all_products_name(_):
+    # CONNECT TO SQLITE3 DATABASE
+    connection = sql.connect(DATABASE)
+    cursor = connection.cursor()
+    names = get_all_products_names(cursor)
+    options = []
+    for name in names:
+        option = {'label': name[0], 'value': name[0]}
+        options.append(option)
+    return options
+
+
+@app.callback(Output("name-edit", "placeholder"),
+              Output("description-edit", "placeholder"),
+              Output("price-per-unit-edit", "placeholder"),
+              Output("basic-unit-edit", "placeholder"),
+              [Input("choose-item-dp", "value")])
+def populate_placeholders(product_name):
+    # CONNECT TO SQLITE3 DATABASE
+    connection = sql.connect(DATABASE)
+    cursor = connection.cursor()
+    description = get_product_description(cursor, product_name)
+    price_per_unit = get_product_price(cursor, connection, product_name)
+    basic_unit = get_product_basic_unit(cursor, product_name)
+    if price_per_unit:
+        return product_name, description, "{} €".format(price_per_unit[0]), basic_unit
+    return ['','','','']

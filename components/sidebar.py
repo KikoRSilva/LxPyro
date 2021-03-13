@@ -17,7 +17,7 @@ sidebar = html.Div(
                                 dbc.Nav(
                                     [
                                         dbc.NavLink("HOME", href="/", active="True",
-                                                    className="grow text-white text-center fs-3 pb-4"),
+                                                    className="grow text-white text-center fs-3 fw-bold pb-4"),
                                         dbc.NavLink("DASHBOARD", href="/apps/dashboard", active="True",
                                                     className="grow text-white text-center fs-3 fw-bold py-4"),
                                         dbc.NavLink("SHOP", href="/apps/shop", active="True",

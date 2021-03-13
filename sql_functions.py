@@ -157,6 +157,9 @@ def get_all_products(cursor, connection):
     cursor.execute("SELECT * FROM Product")
     return cursor.fetchall()
 
+def get_all_products_names(cursor):
+    cursor.execute("Select name FROM Product")
+    return cursor.fetchall()
 
 def get_product_price(cursor, connection, name):
     cursor.execute("SELECT DISTINCT price_per_unit FROM Product WHERE name=?", (name,))
@@ -164,6 +167,14 @@ def get_product_price(cursor, connection, name):
 
 def get_product_stock(cursor, connection, product):
     cursor.execute("SELECT DISTINCT in_stock FROM Product WHERE name=?", (product,))
+    return cursor.fetchone()
+
+def get_product_description(cursor, name):
+    cursor.execute("SELECT description FROM Product WHERE name=?", (name,))
+    return cursor.fetchone()
+
+def get_product_basic_unit(cursor, name):
+    cursor.execute("SELECT basic_unit FROM Product WHERE name=?", (name,))
     return cursor.fetchone()
 
 def get_last_sale_id(cursor):
@@ -212,3 +223,80 @@ def get_most_sold_product(cursor):
     product_name = get_product_name(cursor, product_id)
     product_image = get_product_image(cursor, product_id)
     return product_name, product_quantity, product_image
+
+def get_best_client(cursor):
+    cursor.execute("SELECT name, Instagram, age, address, max(sales_amount) FROM Customer")
+    return cursor.fetchone()
+
+def get_total_revenue(cursor):
+    cursor.execute("SELECT SUM(sale_amount_paid) from Sale")
+    return cursor.fetchone()
+
+def get_best_sales_month(cursor):
+    cursor.execute("""
+                        SELECT strftime("%Y-%m", time_created) as 'year-month', SUM(sale_amount_paid) as 'total'
+                        FROM Sale
+                        GROUP BY strftime("%Y-%m", time_created)
+                        ORDER BY MAX(sale_amount_paid) DESC
+                        LIMIT 1
+                   """)
+    return cursor.fetchone()
+
+def get_most_sold_category(cursor):
+    cursor.execute(
+        """
+        SELECT Category.name FROM
+            (select product_id, sum(quantity_sold) as total
+            FROM Sale_Item
+            GROUP BY product_id
+            ORDER BY total DESC), Product, Category
+        WHERE Product.id = product_id AND Product.category = Category.id
+        GROUP BY Category.name
+        ORDER BY sum(total) DESC
+        LIMIT 1
+        """
+    )
+    return cursor.fetchone()[0]
+
+def get_product_sales_per_month(cursor):
+    cursor.execute(
+        """
+        SELECT Product.name, strftime("%Y-%m", time_created), total FROM 
+            (SELECT product_id, SUM(quantity_sold) as total, sale_id
+            FROM Sale_Item
+            GROUP BY product_id), Product, Sale
+        WHERE Product.id = product_id AND Sale.id = sale_id
+        GROUP BY sale_id
+        """
+    )
+    return cursor.fetchall()
+
+
+def update_product_name(cursor, connection, product, name):
+    cursor.execute("UPDATE Product SET name=? WHERE name=?", (name, product))
+    connection.commit()
+
+def update_product_description(cursor, connection, product, description):
+    cursor.execute("UPDATE Product SET description=? WHERE name=?", (description, product))
+    connection.commit()
+
+def update_product_price_per_unit(cursor, connection, product, price_per_unit):
+    cursor.execute("UPDATE Product SET price_per_unit=? WHERE name=?", (price_per_unit, product))
+    connection.commit()
+
+def update_product_basic_unit(cursor, connection, product, basic_unit):
+    cursor.execute("UPDATE Product SET basic_unit=? WHERE name=?", (basic_unit, product))
+    connection.commit()
+
+def update_product_limited(cursor, connection, product, limited):
+    cursor.execute("UPDATE Product SET limited=? WHERE name=?", (limited, product))
+    connection.commit()
+
+def update_product_active_for_sale(cursor, connection, product, active_for_sale):
+    cursor.execute("UPDATE Product SET active_for_sale=? WHERE name=?", (active_for_sale, product))
+    connection.commit()
+
+def update_product_ImageUrl(cursor, connection, product, ImageUrl):
+    cursor.execute("UPDATE Product SET ImageUrl=? WHERE name=?", (ImageUrl, product))
+    connection.commit()
+
