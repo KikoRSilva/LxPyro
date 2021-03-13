@@ -31,12 +31,10 @@ app = dash.Dash(
     title='LxPyro',
     update_title=False
     )
-
+server = app.server
 du.configure_upload(app, "./static/img", use_upload_id=False)
 
 auth = auth.BasicAuth(
     app,
     USERNAME_PASSWORD_PAIRS
 )
-
-server = app.server

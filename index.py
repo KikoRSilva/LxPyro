@@ -2,14 +2,12 @@ import dash_core_components as dcc
 import dash_html_components as html
 import dash_bootstrap_components as dbc
 import plotly.graph_objs as go
-import plotly.express as px
 from dash.dependencies import Input, Output
 import pandas as pd
 import sqlite3 as sql
 
 # connect to main app.py file
-from app import app, DATABASE
-from app import server
+from app import app, DATABASE, server
 
 # connect to app pages
 from apps import shop, dashboard, error, clients
@@ -90,13 +88,12 @@ content = html.Div(
 
 
 ########################################################################################################################
-################################################## Callbacks ###########################################################
-########################################################################################################################
+# Callbacks
 
 # update stock graph
 @app.callback(Output('main-products', 'figure'),
               [Input('graph-update', 'n_intervals')])
-def update_graph_products(n):
+def update_graph_products(_):
     con = sql.connect(DATABASE)
     # Load the data into a DataFrame
     df = pd.read_sql_query("SELECT name, in_stock from Product", con)
@@ -140,10 +137,15 @@ def update_graph_products(n):
 # update sales graph
 @app.callback(Output('main-sales', 'figure'),
               [Input('graph-update', 'n_intervals')])
-def update_graph_sales(n):
+def update_graph_sales(_):
     con = sql.connect(DATABASE)
     # Load the data into a DataFrame
-    df = pd.read_sql_query("SELECT strftime('%m',time_created) as month, sum(sale_amount_paid) as total FROM Sale GROUP by month", con)
+    df = pd.read_sql_query(
+        """
+            SELECT strftime('%m',time_created) as month, sum(sale_amount_paid) as total 
+            FROM Sale 
+            GROUP BY month
+        """, con)
 
     barchart_sales = go.Figure(
         data=[
@@ -224,7 +226,7 @@ def display_page(pathname):
         return dashboard.layout
     elif pathname == '/':
         return content
-    elif pathname =='/apps/clients':
+    elif pathname == '/apps/clients':
         return clients.layout
     else:
         return error.layout
